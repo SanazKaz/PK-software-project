@@ -35,8 +35,8 @@ class Model:
             'X': X,
         }
 
-def dose(t, X):
-    return X
+    def dose(t, X):
+        return X
 
     def rhs(self, t, y):
         q_c, q_p1 = y
