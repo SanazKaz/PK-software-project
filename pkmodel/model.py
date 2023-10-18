@@ -22,7 +22,7 @@ class Model:
 
     """
 
-    def __init__(self, Q_p1 = 1.0, V_c = 1.0, V_p1 = 1.0, CL = 1.0, X = 1.0, delivery = "intravenous"):
+    def __init__(self, dose_function, Q_p1 = 1.0, V_c = 1.0, V_p1 = 1.0, CL = 1.0, X = 1.0, delivery = "intravenous"):
         delivery_types = ['intravenous', 'subcutaneous']
         if delivery not in delivery_types:
             raise ValueError("Invalid delivery type. Expected one of: %s" % delivery_types)
@@ -34,16 +34,25 @@ class Model:
             'CL': CL,
             'X': X,
         }
+        self.dose = dose_function
 
-    def dose(t, X):
-        return X
 
-    def rhs(self, t, y):
+    def rhs_iv(self, t, y):
         q_c, q_p1 = y
         transition = self.parameters["Q_p1"] * (q_c / self.parameters["V_c"] - q_p1 / self.parameters["V_p1"])
-        dqc_dt = dose(t, X) - q_c / self.parameters["V_c"] * self.parameters["CL"] - transition
+        dqc_dt = self.dose(t, self.parameters["X"]) - q_c / self.parameters["V_c"] * self.parameters["CL"] - transition
         dqp1_dt = transition
         return [dqc_dt, dqp1_dt]
+    
+    def rhs_sc(self, t, y):
+        q_c, q_p1 = y
+        transition = self.parameters["Q_p1"] * (q_c / self.parameters["V_c"] - q_p1 / self.parameters["V_p1"])
+        dqp0_dt = self.dose(t, self.parameters["X"]) - self.parameters["V_c"] * q_c
+        dqc_dt = self.dose(t, self.parameters["X"]) - q_c / self.parameters["V_c"] * self.parameters["CL"] - transition
+        dqp1_dt = transition
+        return [dqc_dt, dqp1_dt]
+    
+
 
    
 
