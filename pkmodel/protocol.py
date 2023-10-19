@@ -21,8 +21,8 @@ class Protocol:
                  Defines the way we inject the drug: intravenous or subcutaneous 
 
                  
-    instantaneous_application: dictionnary, optionnal
-                               {time point : dose injected at this timepoint}
+    instantaneous_application: list of tuples, optionnal
+                               [(time point : dose injected at this timepoint)]
                                Defines the instantaneous injections of specific doses of X ng of the drug at one or more time points
 
 
@@ -35,15 +35,45 @@ class Protocol:
                    Defines the amount of drug injected through the steady application, between Timepoint_0 and Timepoint_1
 
     """
-    def __init__(self, type_dosing = "intravenous", instantaneous_application = {}, steady_application = [0, 1], steady_dose = 0):
+    def __init__(self, type_dosing = "intravenous", instantaneous_application = [], steady_application = [t0 = 0, t1 = 1], steady_dose = 0):
         self.type_dosing = type_dosing
         self.instantaneous_application = instantaneous_application
         self.steady_application = steady_application
         self.steady_dose = steady_dose
 
 
-    def __call__(self, t):
-        """ A method giving the Dose(t) function
+    def sort_instanteneous_application(self, t0 = 0):
+        """ A method to sort the instantenous application list according to the time 
+            and giving the index of the current application in this list 
+
+        Parameters
+        ----------
+
+        t0: float, optionnal
+            beginning of the experiement
+        
+        
+        """
+
+        self.instantaneous_application.sort()
+        while self.instantaneous_application[0] < t0:
+            self.current += 1
+    
+
+    def next_application(self):
+        """ A method updating the index of the application from the instantaneous_application list over time
+            
+        """
+
+        if self.current >= len(self.instantaneous_application):
+            return (None, None)
+        self.current += 1
+        return self.instantaneous_application[self.current-1]
+    
+
+
+    def dose_function(self, t):
+        """ A method giving the Dose(t) function for the steady application 
 
         Parameters
         ----------
