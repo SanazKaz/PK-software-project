@@ -36,19 +36,21 @@ import model
         Function representing the drug dose over time.
     """
 
-class Solution:
-  """ solves the model with set start time, end time and steps and stores
+
+""" solves the model with set start time, end time and steps and stores
    it in the self.solution """
+
+""" Plots the results of the model"""
+class Solution:
     def __init__(self, model: model.Model, t0=0.0, t1=1.0, steps=1000):
         self.model = model
 
         self.solution=model.solve(t0, t1, steps)
         
-""" Plots the results of the model"""
     def plot_data(self):
+        
         plt.plot(self.solution.t, self.solution.y[0, :], label='model1' + '- q_c')
         plt.plot(self.solution.t, self.solution.y[1, :], label='model2' + '- q_p1')
-
         plt.legend()
         plt.ylabel('drug mass [ng]')
         plt.xlabel('time [h]')
