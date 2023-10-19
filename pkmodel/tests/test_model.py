@@ -21,10 +21,25 @@ class ModelTest(unittest.TestCase):
         """
         Tests Model defaults run and the solver returns successfully.
         """
+        sol_iv = {
+            't': 1.0,
+            'y': [4.859e-01, 2.134e-01]
+        }
+        sol_sc = {
+            't': 1.0,
+            'y': [2.134e-01, 6.720e-02, 6.321e-01]
+        }
         for i in ["intravenous", "subcutaneous"]:
             with self.subTest(i=i):
                 model = pk.Model(self.dose_dummy, delivery = i)
                 sol = model.solve()
+                if(i=="intravenous"):
+                    self.assertAlmostEqual(sol.y[0,-1], sol_iv["y"][0], delta=0.01)
+                    self.assertAlmostEqual(sol.y[1,-1], sol_iv["y"][1], delta=0.01)
+                if(i=="subcutaneous"):
+                    self.assertAlmostEqual(sol.y[0,-1], sol_sc["y"][0], delta=0.01)
+                    self.assertAlmostEqual(sol.y[1,-1], sol_sc["y"][1], delta=0.01)
+                    self.assertAlmostEqual(sol.y[2,-1], sol_sc["y"][2], delta=0.01)
                 self.assertTrue(sol.success)
         #self.assertEqual(model)
 
