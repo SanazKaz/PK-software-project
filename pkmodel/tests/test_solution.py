@@ -1,5 +1,6 @@
 import unittest
 import pkmodel as pk
+import numpy as np
 
 
 class SolutionTest(unittest.TestCase):
@@ -20,8 +21,8 @@ class SolutionTest(unittest.TestCase):
         """
         Tests Solution creation.
         """
-        t_sol = [0.,1.]
-        y_sol = [[0.1, 0.2],[0.3,0.4]]
+        t_sol = np.array([0.,1.])
+        y_sol = np.array([[0.1, 0.2],[0.3, 0.4]])
         delivery = "intravenous"
         solution = pk.Solution(t_sol, y_sol, delivery)
         solution.plot_data()
