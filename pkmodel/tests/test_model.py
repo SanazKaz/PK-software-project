@@ -6,7 +6,10 @@ class ModelTest(unittest.TestCase):
     """
     Tests the :class:`Model` class.
     """
-    def dose_dummy(self, t):
+    def dose_dummy(self, t)->float:
+        """
+        Dummy dose function that returns constant float for testing.
+        """
         return 1.0
 
     def test_create(self):
@@ -18,8 +21,7 @@ class ModelTest(unittest.TestCase):
         #self.assertEqual(model)
 
     def test_model_defaults(self):
-        """
-        Tests Model defaults run and the solver returns successfully.
+        """Tests Model defaults run and the solver returns successfully, as well as expected solution.
         """
         sol_iv = {
             't': 1.0,
