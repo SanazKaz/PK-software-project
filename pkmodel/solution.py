@@ -22,13 +22,15 @@ class Solution:
 
         """ Plots the results of the model"""
 
-        if (delivery == "intravenous"):
+        if (self.type_dosing == "intravenous"):
             plt.plot(self.t_sol, self.y_sol[0, :], label = 'compartment' + '- q_c')
             plt.plot(self.t_sol, self.y_sol[1, :], label = 'compartment' + '- q_p1')
-        if (delivery == "subcutaneous"):
+        elif (self.type_dosing == "subcutaneous"):
             plt.plot(self.t_sol, self.y_sol[0, :], label = 'compartment' + '- q_c')
             plt.plot(self.t_sol, self.y_sol[1, :], label = 'compartment' + '- q_p1')
             plt.plot(self.t_sol, self.y_sol[1, :], label = 'compartment' + '- q_p0')
+        else:
+            raise Exception('type_dosing must be either "intravenous" or "subcutaneous"')
         plt.legend()
         plt.ylabel('drug mass [ng]')
         plt.xlabel('time [h]')

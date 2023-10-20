@@ -4,7 +4,6 @@
 
 import scipy
 import numpy as np
-from pkmodel import protocol
 from pkmodel import solution
 
 class Model:
@@ -37,7 +36,7 @@ class Model:
             'k_a': k_a
         }
             
-    def rhs_iv(self, t, y, protocol):
+    def rhs_iv(self, t, y, proto):
 
         """ ODE model for intravenous PK model
         :param t: timepoint
@@ -50,11 +49,11 @@ class Model:
 
         q_c, q_p1 = y
         transition = self.parameters["Q_p1"] * (q_c / self.parameters["V_c"] - q_p1 / self.parameters["V_p1"])
-        dqc_dt = protocol.dose_function(t) - q_c / self.parameters["V_c"] * self.parameters["CL"] - transition
+        dqc_dt = proto.dose_function(t) - q_c / self.parameters["V_c"] * self.parameters["CL"] - transition
         dqp1_dt = transition
         return [dqc_dt, dqp1_dt]
     
-    def rhs_sc(self, t, y, protocol):
+    def rhs_sc(self, t, y, proto):
 
         """ ODE model for subcutaneous PK model
         :param t: timepoint
@@ -67,12 +66,12 @@ class Model:
 
         q_c, q_p1, q_p0 = y
         transition = self.parameters["Q_p1"] * (q_c / self.parameters["V_c"] - q_p1 / self.parameters["V_p1"])
-        dqp0_dt = protocol.dose_function(t) - self.parameters["k_a"] * q_p0
+        dqp0_dt = proto.dose_function(t) - self.parameters["k_a"] * q_p0
         dqc_dt = self.parameters["k_a"] * q_p0 - q_c / self.parameters["V_c"] * self.parameters["CL"] - transition
         dqp1_dt = transition
         return [dqc_dt, dqp1_dt, dqp0_dt]
     
-    def solve_steady(self, protocol, t0 = 0, t1 = 1, steps = 1000, y0 = None):
+    def solve_steady(self, proto, t0 = 0, t1 = 1, steps = 1000, y0 = None):
 
         """ Solves ODE system for supplied duration with number of steps, returns scipy.integrate.solv_ivp output
         :param t0: Start timepoint, defaults to 0
@@ -87,17 +86,17 @@ class Model:
         """
 
         t_eval = np.linspace(t0, t1, steps)
-        if(protocol.type_dosing == "intravenous"):
-            if y0 == None: y0 = np.array([0.0, 0.0])
+        if (proto.type_dosing == "intravenous"):
+            if(type(y0) == type(None)): y0 = np.array([0.0, 0.0])
             sol = scipy.integrate.solve_ivp(
-                fun = lambda t, y: self.rhs_iv(t, y, protocol),
+                fun = lambda t, y: self.rhs_iv(t, y, proto),
                 t_span = [t_eval[0], t_eval[-1]],
                 y0=y0, t_eval=t_eval
             )
-        elif(protocol.type_dosing == "subcutaneous"):
-            if y0 == None: y0 = np.array([0.0, 0.0, 0.0])
+        elif (proto.type_dosing == "subcutaneous"):
+            if(type(y0) == type(None)): y0 = np.array([0.0, 0.0, 0.0])
             sol = scipy.integrate.solve_ivp(
-                fun = lambda t, y: self.rhs_sc(t, y, protocol),
+                fun = lambda t, y: self.rhs_sc(t, y, proto),
                 t_span=[t_eval[0], t_eval[-1]],
                 y0=y0, t_eval=t_eval
             )
@@ -105,30 +104,34 @@ class Model:
             raise Exception('type_dosing must be either "intravenous" or "subcutaneous"')
         return sol
 
-    def solve(self, protocol, t0 = 0, t1 = 1, steps = 1000):
+    def solve(self, proto, t0 = 0, t1 = 1, steps = 1000):
         remaining_steps = steps
         t_old = t0
-        Y = 0
-        t_new, X = protocol.next_application()
-        while(X != None and t_new < t1):
+        Y = None
+        t_solutions = []
+        y_solutions = []
+        t_new, X = proto.next_application()
+        while (X != None and t_new < t1):
             if (t_new > t_old):
                 temp_steps = int(remaining_steps*(t_new - t_old)/(t1 - t_old))
-                sol = self.solve_steady(protocol, t0 = t_old, t1 = t_new, steps = temp_steps + 1, y0 = Y)
+                sol = self.solve_steady(proto, t0 = t_old, t1 = t_new, steps = temp_steps + 1, y0 = Y)
                 remaining_steps -= temp_steps
                 t_solutions += [sol.t]
                 y_solutions += [sol.y]
                 t_old = sol.t[-1]
-                if(protocol.type_dosing == "intravenous"):
-                    Y = sol.y[-1] + np.array([X, 0.0])
-                elif(protocol.type_dosing == "subcutaneous"):
-                    Y = sol.y[-1] + np.array([0.0, 0.0, X])
-            t_new, X = protocol.next_application()
-        sol = self.solve_steady(protocol, t0 = t_old, t1 = t1, steps = remaining_steps + 1, y0 = Y)
+                if(proto.type_dosing == "intravenous"):
+                    Y = sol.y[:,-1] + np.array([X, 0.0])
+                elif(proto.type_dosing == "subcutaneous"):
+                    Y = sol.y[:,-1] + np.array([0.0, 0.0, X])
+                else:
+                    raise Exception('type_dosing must be either "intravenous" or "subcutaneous"')
+            t_new, X = proto.next_application()
+        sol = self.solve_steady(proto, t0 = t_old, t1 = t1, steps = remaining_steps + 1, y0 = Y)
         t_solutions += [sol.t]
         y_solutions += [sol.y]
         t_sol = np.concatenate(t_solutions)
         y_sol = np.concatenate(y_solutions, axis=-1)
-        return Solution(t_sol, y_sol, protocol.type_dosing)
+        return solution.Solution(t_sol, y_sol, proto.type_dosing)
 
         
 
