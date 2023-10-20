@@ -90,14 +90,14 @@ class Model:
         if(protocol.type_dosing == "intravenous"):
             if y0 == None: y0 = np.array([0.0, 0.0])
             sol = scipy.integrate.solve_ivp(
-                fun = lambda t, y: self.rhs_iv(protocol, t, y),
+                fun = lambda t, y: self.rhs_iv(t, y, protocol),
                 t_span = [t_eval[0], t_eval[-1]],
                 y0=y0, t_eval=t_eval
             )
         elif(protocol.type_dosing == "subcutaneous"):
             if y0 == None: y0 = np.array([0.0, 0.0, 0.0])
             sol = scipy.integrate.solve_ivp(
-                fun = lambda t, y: self.rhs_sc(protocol, t, y),
+                fun = lambda t, y: self.rhs_sc(t, y, protocol),
                 t_span=[t_eval[0], t_eval[-1]],
                 y0=y0, t_eval=t_eval
             )
@@ -113,19 +113,22 @@ class Model:
         while(X != None and t_new < t1):
             if (t_new > t_old):
                 temp_steps = int(remaining_steps*(t_new - t_old)/(t1 - t_old))
-                sol = self.solve_steady(t_old, t_new, temp_steps + 1, Y, protocol)
+                sol = self.solve_steady(protocol, t0 = t_old, t1 = t_new, steps = temp_steps + 1, y0 = Y)
                 remaining_steps -= temp_steps
                 t_solutions += [sol.t]
                 y_solutions += [sol.y]
                 t_old = sol.t[-1]
-                Y = sol.y[-1] + X
+                if(protocol.type_dosing == "intravenous"):
+                    Y = sol.y[-1] + np.array([X, 0.0])
+                elif(protocol.type_dosing == "subcutaneous"):
+                    Y = sol.y[-1] + np.array([0.0, 0.0, X])
             t_new, X = protocol.next_application()
-        sol = self.solve_steady(t_old, t1, remaining_steps + 1, Y, protocol)
+        sol = self.solve_steady(protocol, t0 = t_old, t1 = t1, steps = remaining_steps + 1, y0 = Y)
         t_solutions += [sol.t]
         y_solutions += [sol.y]
-        t_sol = concatenate(t_solutions)
-        y_sol = concatenate(y_solutions, axis=-1)
-        return Solution(t_sol, y_sol, delivery)
+        t_sol = np.concatenate(t_solutions)
+        y_sol = np.concatenate(y_solutions, axis=-1)
+        return Solution(t_sol, y_sol, protocol.type_dosing)
 
         
 

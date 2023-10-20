@@ -13,8 +13,8 @@ It models both intravenous (iv) and subcutaneous (sc) drug administration routes
 
 class Solution:
 
-    def __init__(self, t_sol, y_sol, delivery):
-        self.delivery = delivery
+    def __init__(self, t_sol, y_sol, type_dosing):
+        self.type_dosing = type_dosing
         self.t_sol = t_sol
         self.y_sol = y_sol
 
