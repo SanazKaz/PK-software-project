@@ -13,27 +13,13 @@
 class Protocol:
     """A Pharmokinetic (PK) protocol
 
-    Parameters
-    ----------
-
-    type_dosing: string, optional
-                 "intravenous" or "subcutaneous"
-                 Defines the way we inject the drug: intravenous or subcutaneous 
-
-                 
-    instantaneous_application: list of tuples, optional
-                               Assumption: Sorted by time, first injection inside the [t0, t1] time interval
-                               [(time point : dose injected at this timepoint)]
-                               Defines the instantaneous injections of specific doses of X ng of the drug at one or more time points
-
-
-    steady_application: tuple, optional
-                        (t0, t1)
-                        Defines the timepoints of the beginning and the end of the steady application
-    
-                        
-    steady_dose = numeric, optional
-                   Defines the amount of drug injected through the steady application, between Timepoint_0 and Timepoint_1
+   Args:
+        type_dosing (str):optional, "intravenous" or "subcutaneous", defines the way we inject the drug 
+        instantaneous_application (list of tuples): optional, defines the instantaneous injections of specific doses of X ng 
+            of the drug at one or more time points, [(time point : dose injected at this timepoint)]
+            Assumption: Sorted by time, first injection inside the [t0, t1] time interval
+        steady_application (tuple): optional, (t0, t1), defines the timepoints of the beginning and the end of the steady application
+        steady_dose (numeric): optional, defines the amount of drug injected through the steady application, between t0 and t1
 
     """
     def __init__(self, type_dosing = "intravenous", instantaneous_application = [], steady_application = (0,1), steady_dose = 0):
@@ -58,10 +44,8 @@ class Protocol:
     def dose_function(self, t):
         """ A method giving the Dose(t) function for the steady application 
 
-        Parameters
-        ----------
-        t: float
-           time
+        Args:
+             t (float): time
         """
 
         if (self.steady_application[0] <= t) and (t <= self.steady_application[1]) :

@@ -11,20 +11,14 @@ class Model:
     """
     A Pharmokinetic (PK) model
 
-    Parameters (live within parameters property, a dictionary)
-    ----------
-    dose_function: function
-        not sure what this should look like #TODO
-    Q_p1: numeric, optional
-        the transition rate between central compartment and peripheral compartment 1
-    V_c: numeric, optional
-        [mL], the volume of the central compartment
-    V_p1: numeric, optional
-        [mL], the volume of the first peripheral compartment
-    k_a: numeric, optional
-        [mL], the volume of the first peripheral compartment
-    CL: numeric, optional
-        [mL/h], the clearance/elimination rate from the central compartment
+    Args:
+         dose_function (function): steady application dose injected over time
+         Q_p1 (numeric): optional, the transition rate between central compartment and peripheral compartment 1
+         V_c (numeric): optional, [mL], the volume of the central compartment
+         V_p1 (numeric): optional, [mL], the volume of the first peripheral compartment
+         k_a (numeric): optional, [/h] is the “absorption” rate for the s.c dosing.
+         CL (numeric): optional, [mL/h], the clearance/elimination rate from the central compartment
+
     """
 
     def __init__(self, Q_p1 = 1.0, V_c = 1.0, V_p1 = 1.0, CL = 1.0, k_a = 1.0):
@@ -37,14 +31,18 @@ class Model:
         }
             
     def rhs_iv(self, t, y, proto):
+        
+        """ 
+        ODE model for intravenous PK model
 
-        """ ODE model for intravenous PK model
-        :param t: timepoint
-        :type t: float
-        :param y: ODE variables
-        :type t1: list of floats
-        :return [dqc_dt, dqp1_dt]: List of differentials of amount, first is central compartment, second is peripheral comp
-        :rtype [dqc_dt, dqp1_dt]: List of floats
+        Args:
+             t (float): timepoint
+             y (float): ODE variables
+             protocol (Protocol()): protocol used for the model, instance of Protocol()
+
+        Returns:     
+            [dqc_dt, dqp1_dt] (list of floats): List of differentials of amount, 
+                first is central compartment, second is peripheral compartment
         """
 
         q_c, q_p1 = y
@@ -55,13 +53,17 @@ class Model:
     
     def rhs_sc(self, t, y, proto):
 
-        """ ODE model for subcutaneous PK model
-        :param t: timepoint
-        :type t: float
-        :param y: ODE variables
-        :type t1: list of floats
-        :return [dqc_dt, dqp1_dt, dqp0_dt]: List of differentials of amounts for central, peripheral, skin compartments
-        :rtype [dqc_dt, dqp1_dt, dqp0_dt]: List of floats
+        """ 
+        ODE model for subcutaneous PK model
+
+        Args:
+            t (float): timepoint
+            y (float): ODE variables
+            protocol (Protocol()): protocol used for the model, instance of Protocol()
+
+        Returns:     
+            [dqc_dt, dqp1_dt, dqp0_dt] (list of floats): List of differentials of amount for central, peripheral, skin compartments
+                first is central compartment, second is peripheral compartment            
         """
 
         q_c, q_p1, q_p0 = y
@@ -73,16 +75,17 @@ class Model:
     
     def solve_steady(self, proto, t0 = 0, t1 = 1, steps = 1000, y0 = None):
 
-        """ Solves ODE system for supplied duration with number of steps, returns scipy.integrate.solv_ivp output
-        :param t0: Start timepoint, defaults to 0
-        :type t0: float, optional
-        :param t1: End timepoint, defaults to 1
-        :type t1: float, optional
-        :param steps: Number of steps to integrate, defaults to 1000
-        :type t1: int, optional
-        :return sol: Bunch object with various fields defined, such as t (1D nparray of time series), y (N-dim nparray of solution),
-        success bool - for details see scipy.integrate.solv_ivp
-        :rtype sol: Bunch object
+        """ 
+        Solves ODE system for supplied duration with number of steps, returns scipy.integrate.solv_ivp output
+
+        Args:
+             t0 (float): optional, start timepoint, defaults to 0
+             t1 (float): optional, end timepoint, defaults to 1
+             steps (int): optional, number of steps to integrate, defaults to 1000
+
+        Returns:     
+            sol (bunch object): bunch object with various fields defined, such as t (1D nparray of time series), y (N-dim nparray of solution),
+                success bool - for details see scipy.integrate.solv_ivp
         """
 
         t_eval = np.linspace(t0, t1, steps)
