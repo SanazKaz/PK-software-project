@@ -28,7 +28,7 @@ class Solution:
         elif (self.type_dosing == "subcutaneous"):
             plt.plot(self.t_sol, self.y_sol[0, :], label = 'compartment' + '- q_c')
             plt.plot(self.t_sol, self.y_sol[1, :], label = 'compartment' + '- q_p1')
-            plt.plot(self.t_sol, self.y_sol[1, :], label = 'compartment' + '- q_p0')
+            plt.plot(self.t_sol, self.y_sol[2, :], label = 'compartment' + '- q_p0')
         else:
             raise Exception('type_dosing must be either "intravenous" or "subcutaneous"')
         plt.legend()
