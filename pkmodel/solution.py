@@ -21,7 +21,7 @@ class Solution:
     def plot_data(self, path = None):
 
         """ Plots the results of the model"""
-
+        fig = plt.figure()
         if (self.type_dosing == "intravenous"):
             plt.plot(self.t_sol, self.y_sol[0, :], label = 'compartment' + '- q_c')
             plt.plot(self.t_sol, self.y_sol[1, :], label = 'compartment' + '- q_p1')
@@ -36,6 +36,5 @@ class Solution:
         plt.xlabel('time [h]')
         if (path == None): plt.show()
         else:
-            fig = plt.figure()
             plt.savefig(path)
             plt.close(fig)
