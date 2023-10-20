@@ -64,6 +64,8 @@ setup(
         'numpy',
         'matplotlib',
         'scipy',
+        'pytest',
+        'pytest-cov'
     ],
     extras_require={
         'docs': [
