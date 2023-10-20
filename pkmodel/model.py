@@ -28,9 +28,8 @@ class Model:
         [mL/h], the clearance/elimination rate from the central compartment
     """
 
-    def __init__(self, Q_p1 = 1.0, V_c = 1.0, V_p1 = 1.0, CL = 1.0, k_a = 1.0, delivery = "intravenous"):
+    def __init__(self, Q_p1 = 1.0, V_c = 1.0, V_p1 = 1.0, CL = 1.0, k_a = 1.0):
         self.parameters = {
-            'delivery': delivery,
             'Q_p1': Q_p1,
             'V_c': V_c,
             'V_p1': V_p1,
@@ -39,6 +38,7 @@ class Model:
         }
             
     def rhs_iv(self, t, y, protocol):
+
         """ ODE model for intravenous PK model
         :param t: timepoint
         :type t: float
@@ -47,6 +47,7 @@ class Model:
         :return [dqc_dt, dqp1_dt]: List of differentials of amount, first is central compartment, second is peripheral comp
         :rtype [dqc_dt, dqp1_dt]: List of floats
         """
+
         q_c, q_p1 = y
         transition = self.parameters["Q_p1"] * (q_c / self.parameters["V_c"] - q_p1 / self.parameters["V_p1"])
         dqc_dt = protocol.dose_function(t) - q_c / self.parameters["V_c"] * self.parameters["CL"] - transition
@@ -54,6 +55,7 @@ class Model:
         return [dqc_dt, dqp1_dt]
     
     def rhs_sc(self, t, y, protocol):
+
         """ ODE model for subcutaneous PK model
         :param t: timepoint
         :type t: float
@@ -62,6 +64,7 @@ class Model:
         :return [dqc_dt, dqp1_dt, dqp0_dt]: List of differentials of amounts for central, peripheral, skin compartments
         :rtype [dqc_dt, dqp1_dt, dqp0_dt]: List of floats
         """
+
         q_c, q_p1, q_p0 = y
         transition = self.parameters["Q_p1"] * (q_c / self.parameters["V_c"] - q_p1 / self.parameters["V_p1"])
         dqp0_dt = protocol.dose_function(t) - self.parameters["k_a"] * q_p0
@@ -70,6 +73,7 @@ class Model:
         return [dqc_dt, dqp1_dt, dqp0_dt]
     
     def solve_steady(self, protocol, t0 = 0, t1 = 1, steps = 1000, y0 = None):
+
         """ Solves ODE system for supplied duration with number of steps, returns scipy.integrate.solv_ivp output
         :param t0: Start timepoint, defaults to 0
         :type t0: float, optional
@@ -81,18 +85,19 @@ class Model:
         success bool - for details see scipy.integrate.solv_ivp
         :rtype sol: Bunch object
         """
+
         t_eval = np.linspace(t0, t1, steps)
         if(protocol.type_dosing == "intravenous"):
             if y0 == None: y0 = np.array([0.0, 0.0])
             sol = scipy.integrate.solve_ivp(
-                fun = lambda t, y: self.rhs_iv(t, y),
+                fun = lambda t, y: self.rhs_iv(protocol, t, y),
                 t_span = [t_eval[0], t_eval[-1]],
                 y0=y0, t_eval=t_eval
             )
         elif(protocol.type_dosing == "subcutaneous"):
             if y0 == None: y0 = np.array([0.0, 0.0, 0.0])
             sol = scipy.integrate.solve_ivp(
-                fun = lambda t, y: self.rhs_sc(t, y),
+                fun = lambda t, y: self.rhs_sc(protocol, t, y),
                 t_span=[t_eval[0], t_eval[-1]],
                 y0=y0, t_eval=t_eval
             )
@@ -102,18 +107,18 @@ class Model:
 
     def solve(self, protocol, t0 = 0, t1 = 1, steps = 1000):
         remaining_steps = steps
-        protocol.sort_instanteneous_application(t0)
         t_old = t0
         Y = 0
         t_new, X = protocol.next_application()
         while(X != None and t_new < t1):
-            temp_steps = int(remaining_steps*(t_new - t_old)/(t1 - t_old))
-            sol = self.solve_steady(t_old, t_new, temp_steps + 1, Y, protocol)
-            remaining_steps -= temp_steps
-            t_solutions += [sol.t]
-            y_solutions += [sol.y]
-            t_old = sol.t[-1]
-            Y = sol.y[-1] + X
+            if (t_new > t_old):
+                temp_steps = int(remaining_steps*(t_new - t_old)/(t1 - t_old))
+                sol = self.solve_steady(t_old, t_new, temp_steps + 1, Y, protocol)
+                remaining_steps -= temp_steps
+                t_solutions += [sol.t]
+                y_solutions += [sol.y]
+                t_old = sol.t[-1]
+                Y = sol.y[-1] + X
             t_new, X = protocol.next_application()
         sol = self.solve_steady(t_old, t1, remaining_steps + 1, Y, protocol)
         t_solutions += [sol.t]

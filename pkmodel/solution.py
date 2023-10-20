@@ -20,7 +20,7 @@ class Solution:
 
     def plot_data(self):
 
-    """ Plots the results of the model"""
+        """ Plots the results of the model"""
 
         if (delivery == "intravenous"):
             plt.plot(self.t_sol, self.y_sol[0, :], label = 'compartment' + '- q_c')
