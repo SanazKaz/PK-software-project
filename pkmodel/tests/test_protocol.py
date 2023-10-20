@@ -27,13 +27,13 @@ class ProtocolTest(unittest.TestCase):
         protocol = pk.Protocol('intravenous', [(2, 4), (3, 1)], (0, 5), 4)
         first_application_time_dose = protocol.next_application()
         self.assertEqual(first_application_time_dose, (2, 4))
-        self.assertEqual(self.current, 1)
+        self.assertEqual(protocol.current, 1)
         second_application_time_dose = protocol.next_application()
         self.assertEqual(second_application_time_dose, (3, 1))
-        self.assertEqual(self.current, 2)
+        self.assertEqual(protocol.current, 2)
         third_application_time_dose = protocol.next_application()
         self.assertEqual(third_application_time_dose, (None, None))
-        self.assertEqual(self.current, 2)
+        self.assertEqual(protocol.current, 2)
 
 
 
