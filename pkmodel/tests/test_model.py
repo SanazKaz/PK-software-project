@@ -45,7 +45,7 @@ class ModelTest(unittest.TestCase):
                 self.assertAlmostEqual(sol.y[2,-1], sol_sc["y"][2], delta=0.01)
 
     def test_solve(self):
-       Q_p1, V_c, V_p1, CL, k_a = rand.rand(5)
+       Q_p1, V_c, V_p1, CL, k_a = 1, 1, 1, 1, 1
        model = pk.Model(Q_p1 = Q_p1, V_c = V_c, V_p1 = V_p1, CL = CL, k_a = k_a)
        for type_dosing in ["intravenous", "subcutaneous"]:
            protocol = pk.Protocol(type_dosing = type_dosing, instantaneous_application = [(i/4, 1) for i in range(8)], steady_application = (1, 2), steady_dose = 1)

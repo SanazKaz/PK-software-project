@@ -37,12 +37,15 @@ To install the project:
 To use the project:
 ```
 from pkmodel import Protocol, Model, Solution
-protocol = Protocol('intravenous', [(2, 4), (3, 1)], (0, 5), 4)
 model = Model(Q_p1 = 1.0, V_c = 1.0, V_p1 = 1.0, CL = 1.0, k_a = 1.0)
-solution = Solution(model, protocol)
-solution.solve()
-
+for type_dosing in ["intravenous", "subcutaneous"]:
+  protocol = Protocol(type_dosing = type_dosing, instantaneous_application = [(i/4, 1) for i in range(8)], steady_application = (1, 2), steady_dose = 1)
+  solution = model.solve(protocol, t0 = 0, t1 = 2)
+  solution.plot_data('test_plot_' + type_dosing + '.png')
 ```
+Using this code creates the figures
+![Intravenous Injection Plot](https://github.com/SanazKaz/PK-software-project/blob/master/test_plot_intravenous.png)
+![subcutaneous Injection Plot](https://github.com/SanazKaz/PK-software-project/blob/master/test_plot_subcutaneous.png)
 
 ## Contributing
 
