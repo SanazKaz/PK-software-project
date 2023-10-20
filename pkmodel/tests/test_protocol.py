@@ -1,6 +1,5 @@
 import unittest
 import pkmodel as pk
-import pytest
 import numpy as np
 
 
@@ -45,9 +44,9 @@ class ProtocolTest(unittest.TestCase):
         Test dose_function return the steady_dose when t is inside the time interval (t0, t1), 
         and returns 0 if t is not in the interval (t0, t1)
 
-        """"
+        """
         protocol = pk.Protocol('intravenous', [(2, 4), (3, 1)], (0, 5), 4)
-        
+
         self.assertEqual(protocol.dose_function(2), 4)
         self.assertEqual(protocol.dose_function(-1), 0)
         self.assertEqual(protocol.dose_function(7), 0)
