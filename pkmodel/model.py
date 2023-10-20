@@ -4,8 +4,8 @@
 
 import scipy
 import numpy as np
-import protocol
-import solution
+from pkmodel import protocol
+from pkmodel import solution
 
 class Model:
 
@@ -29,8 +29,6 @@ class Model:
     """
 
     def __init__(self, Q_p1 = 1.0, V_c = 1.0, V_p1 = 1.0, CL = 1.0, k_a = 1.0, delivery = "intravenous"):
-        if delivery not in ['intravenous', 'subcutaneous']:
-            raise ValueError("Invalid delivery type. Expected one of: %s" % delivery_types)
         self.parameters = {
             'delivery': delivery,
             'Q_p1': Q_p1,
@@ -39,9 +37,7 @@ class Model:
             'CL': CL,
             'k_a': k_a
         }
-        self.dose_function = dose_function
-
-
+        
     def rhs_iv(self, t, y, protocol):
         q_c, q_p1 = y
         transition = self.parameters["Q_p1"] * (q_c / self.parameters["V_c"] - q_p1 / self.parameters["V_p1"])
@@ -57,25 +53,27 @@ class Model:
         dqp1_dt = transition
         return [dqc_dt, dqp1_dt, dqp0_dt]
     
-    def solve_steady(self, t0 = 0, t1 = 1, steps = 1000, y0 = None, protocol):
+    def solve_steady(self, protocol, t0 = 0, t1 = 1, steps = 1000, y0 = None):
         t_eval = np.linspace(t0, t1, steps)
-        if(self.parameters["delivery"] == "intravenous"):
+        if(protocol.type_dosing == "intravenous"):
             if y0 == None: y0 = np.array([0.0, 0.0])
             sol = scipy.integrate.solve_ivp(
                 fun = lambda t, y: self.rhs_iv(t, y),
                 t_span = [t_eval[0], t_eval[-1]],
                 y0=y0, t_eval=t_eval
             )
-        elif(self.parameters["delivery"] == "subcutaneous"):
+        elif(protocol.type_dosing == "subcutaneous"):
             if y0 == None: y0 = np.array([0.0, 0.0, 0.0])
             sol = scipy.integrate.solve_ivp(
                 fun = lambda t, y: self.rhs_sc(t, y),
                 t_span=[t_eval[0], t_eval[-1]],
                 y0=y0, t_eval=t_eval
             )
+        else:
+            raise Exception('type_dosing must be either "intravenous" or "subcutaneous"')
         return sol
 
-    def solve(self, t0 = 0, t1 = 1, steps = 1000, protocol):
+    def solve(self, protocol, t0 = 0, t1 = 1, steps = 1000):
         remaining_steps = steps
         protocol.sort_instanteneous_application(t0)
         t_old = t0

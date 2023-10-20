@@ -69,8 +69,6 @@ class Protocol:
             return (None, None)
         self.current += 1
         return self.instantaneous_application[self.current-1]
-    
-
 
     def dose_function(self, t):
         """ A method giving the Dose(t) function for the steady application 
