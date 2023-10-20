@@ -18,7 +18,7 @@ class Solution:
         self.t_sol = t_sol
         self.y_sol = y_sol
 
-    def plot_data(self):
+    def plot_data(self, path = None):
 
         """ Plots the results of the model"""
 
@@ -34,4 +34,8 @@ class Solution:
         plt.legend()
         plt.ylabel('drug mass [ng]')
         plt.xlabel('time [h]')
-        plt.show()
+        if (path == None): plt.show()
+        else:
+            fig = plt.figure()
+            plt.savefig(path)
+            plt.close(fig)

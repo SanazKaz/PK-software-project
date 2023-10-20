@@ -49,7 +49,7 @@ class ModelTest(unittest.TestCase):
        model = pk.Model(Q_p1 = Q_p1, V_c = V_c, V_p1 = V_p1, CL = CL, k_a = k_a)
        for type_dosing in ["intravenous", "subcutaneous"]:
            protocol = pk.Protocol(type_dosing = type_dosing, instantaneous_application = [(i/4, 1) for i in range(8)], steady_application = (1, 2), steady_dose = 1)
-           model.solve(protocol, t0 = 0, t1 = 2).plot_data()
+           model.solve(protocol, t0 = 0, t1 = 2).plot_data('test_plot_' + type_dosing + '.png')
 
 if __name__ == '__main__':
     unittest.main()
